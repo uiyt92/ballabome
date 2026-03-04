@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, Suspense, useState } from 'react'
 import { loadPaymentWidget, PaymentWidgetInstance } from '@tosspayments/payment-widget-sdk'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { createClient } from '@/utils/supabase/client'
+import { useCartStore } from '@/store/cartStore'
+import DaumPostcode from 'react-daum-postcode'
 
 const clientKey = "test_ck_D5GePWvyJnrKwdP715g8gLzN97Eq" // Toss Payments Test Client Key
 const customerKey = "YbX2HuSlsC9uVJW6NMRMj" // Random string for customer key
@@ -13,9 +15,16 @@ function CheckoutContent() {
     const paymentWidgetRef = useRef<PaymentWidgetInstance | null>(null)
     const paymentMethodsWidgetRef = useRef<ReturnType<PaymentWidgetInstance['renderPaymentMethods']> | null>(null)
     const [isWidgetReady, setIsWidgetReady] = useState(false)
+    const router = useRouter()
     const searchParams = useSearchParams()
+    const isDirectBuy = searchParams.get('mode') === 'direct'
+
+    // Cart State
+    const { items, buyNowItem, getTotalPrice, _hasHydrated } = useCartStore()
+    const [mounted, setMounted] = useState(false)
 
     // Shipping State
+    const [isPostcodeOpen, setIsPostcodeOpen] = useState(false)
     const [receiverName, setReceiverName] = useState('')
     const [receiverPhone, setReceiverPhone] = useState('')
     const [address, setAddress] = useState('')
@@ -33,12 +42,30 @@ function CheckoutContent() {
     const [couponCode, setCouponCode] = useState('')
     const [discountAmount, setDiscountAmount] = useState(0)
 
-    // Get product info from URL or default
-    const productName = searchParams.get('productName') || '청아 앰플'
-    const paramPrice = searchParams.get('price');
-    const productPrice = paramPrice && !isNaN(parseInt(paramPrice)) ? parseInt(paramPrice) : 34800;
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
-    const finalPrice = productPrice - discountAmount
+    useEffect(() => {
+        // Wait for Zustand to finish loading from localStorage before checking for empty cart
+        if (mounted && _hasHydrated) {
+            if (isDirectBuy) {
+                if (!buyNowItem) {
+                    alert('결제할 상품이 없습니다.')
+                    router.push('/')
+                }
+            } else if (items.length === 0) {
+                alert('결제할 상품이 없습니다.')
+                router.push('/cart')
+            }
+        }
+    }, [mounted, _hasHydrated, isDirectBuy, buyNowItem, items, router])
+
+    const checkoutItems = isDirectBuy && buyNowItem ? [buyNowItem] : items
+    const cartTotalPrice = isDirectBuy && buyNowItem ? buyNowItem.price * buyNowItem.quantity : getTotalPrice()
+    const finalPrice = cartTotalPrice - discountAmount
+    const orderName = checkoutItems.length > 1 ? `${checkoutItems[0].name} 외 ${checkoutItems.length - 1}건` : checkoutItems[0]?.name || '상품'
+    const totalQuantity = checkoutItems.reduce((acc, item) => acc + item.quantity, 0)
 
     // Supabase: 로그인 유저 프로필 불러오기
     useEffect(() => {
@@ -79,7 +106,7 @@ function CheckoutContent() {
                 // Render Payment Methods
                 const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
                     '#payment-widget',
-                    { value: productPrice }, // Use product price initially, update later
+                    { value: cartTotalPrice || 1000 }, // value cannot be 0, fallback
                     { variantKey: 'DEFAULT' }
                 )
 
@@ -106,6 +133,21 @@ function CheckoutContent() {
             widget.updateAmount(finalPrice)
         }
     }, [finalPrice])
+
+    const handleCompletePostcode = (data: any) => {
+        let fullAddress = data.address;
+        let extraAddress = '';
+
+        if (data.addressType === 'R') {
+            if (data.bname !== '') extraAddress += data.bname;
+            if (data.buildingName !== '') extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+            fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+        }
+
+        setZipCode(data.zonecode);
+        setAddress(fullAddress);
+        setIsPostcodeOpen(false);
+    }
 
     const handleApplyCoupon = () => {
         if (couponCode === 'WELCOME') {
@@ -148,8 +190,8 @@ function CheckoutContent() {
                 await supabase.from('orders').insert({
                     user_id: userId,
                     order_id: orderId,
-                    product_name: productName,
-                    quantity: 1,
+                    product_name: orderName,
+                    quantity: totalQuantity,
                     total_amount: finalPrice,
                     status: 'PENDING',
                     receiver_name: receiverName,
@@ -164,11 +206,11 @@ function CheckoutContent() {
             // 토스 결제 요청
             await paymentWidget?.requestPayment({
                 orderId: orderId,
-                orderName: productName,
+                orderName: orderName,
                 customerName: receiverName,
                 customerEmail: userEmail || 'guest@ballabom.com',
                 customerMobilePhone: receiverPhone.replace(/-/g, ''),
-                successUrl: `${window.location.origin}/payment/success`,
+                successUrl: `${window.location.origin}/payment/success${isDirectBuy ? '?mode=direct' : ''}`,
                 failUrl: `${window.location.origin}/payment/fail`,
             })
         } catch (error) {
@@ -261,7 +303,10 @@ function CheckoutContent() {
                                             className="w-24 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-500"
                                             placeholder="우편번호"
                                         />
-                                        <button className="flex-1 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-colors">
+                                        <button
+                                            onClick={() => setIsPostcodeOpen(true)}
+                                            className="flex-1 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-colors"
+                                        >
                                             주소 찾기
                                         </button>
                                     </div>
@@ -337,9 +382,15 @@ function CheckoutContent() {
                             최종 결제 금액
                         </h2>
                         <div className="space-y-3">
-                            <div className="flex justify-between items-center text-gray-600">
-                                <span>상품 금액</span>
-                                <span>{productPrice.toLocaleString()}원</span>
+                            {mounted && checkoutItems.map(item => (
+                                <div key={item.id} className="flex justify-between items-center text-sm text-gray-600">
+                                    <span className="truncate pr-4">{item.name} x {item.quantity}</span>
+                                    <span className="whitespace-nowrap">{(item.price * item.quantity).toLocaleString()}원</span>
+                                </div>
+                            ))}
+                            <div className="flex justify-between items-center text-gray-900 pt-2 font-medium">
+                                <span>총 상품 금액</span>
+                                <span>{cartTotalPrice.toLocaleString()}원</span>
                             </div>
                             <div className="flex justify-between items-center text-blue-600">
                                 <span>할인 금액</span>
@@ -376,6 +427,18 @@ function CheckoutContent() {
                     </div>
                 </div>
             </div>
+            {/* Daum Postcode Modal */}
+            {isPostcodeOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl w-full max-w-md relative overflow-hidden shadow-2xl">
+                        <div className="p-4 border-b flex justify-between items-center bg-white">
+                            <h3 className="font-bold">우편번호 찾기</h3>
+                            <button onClick={() => setIsPostcodeOpen(false)} className="text-2xl leading-none text-gray-500 hover:text-black">&times;</button>
+                        </div>
+                        <DaumPostcode onComplete={handleCompletePostcode} style={{ height: '400px' }} />
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
@@ -389,4 +452,5 @@ export default function CheckoutPage() {
             </Suspense>
         </div>
     )
+
 }

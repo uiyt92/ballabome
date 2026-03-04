@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useCartStore } from '@/store/cartStore'
 
 // Product Images
 const productImages = [
@@ -33,11 +34,39 @@ export default function ProductDetailPage() {
     const [selectedOption, setSelectedOption] = useState<number | null>(null)
     const [isOptionOpen, setIsOptionOpen] = useState(false)
     const router = useRouter()
+    const { addToCart, setBuyNowItem } = useCartStore()
+
+    const handleAddToCart = () => {
+        const option = productOptions.find(o => o.id === (selectedOption || 3))
+        if (!option) return
+
+        addToCart({
+            id: `cheonga-ampoule-${option.id}`,
+            name: option.name,
+            price: option.price,
+            quantity: 1,
+            image: productImages[0]
+        })
+
+        if (confirm('장바구니에 상품을 담았습니다. 장바구니로 이동하시겠습니까?')) {
+            router.push('/cart')
+        }
+    }
 
     const handleBuy = () => {
-        const option = productOptions.find(o => o.id === (selectedOption || 3)) // Default to single item if none selected
+        const option = productOptions.find(o => o.id === (selectedOption || 3))
         if (!option) return
-        router.push(`/checkout?productName=${encodeURIComponent(option.name)}&price=${option.price}`)
+
+        // 바로 구매 시 장바구니에 담지 않고 개별 구매 상태로 이동
+        setBuyNowItem({
+            id: `cheonga-ampoule-${option.id}`,
+            name: option.name,
+            price: option.price,
+            quantity: 1,
+            image: productImages[0]
+        })
+
+        router.push('/checkout?mode=direct')
     }
 
     return (
@@ -227,7 +256,10 @@ export default function ProductDetailPage() {
 
                             {/* Action Buttons */}
                             <div className="grid grid-cols-3 gap-3 pt-4">
-                                <button className="col-span-1 h-14 bg-white border border-zinc-200 text-zinc-900 font-bold rounded-xl hover:bg-zinc-50 transition-colors flex items-center justify-center gap-2">
+                                <button
+                                    onClick={handleAddToCart}
+                                    className="col-span-1 h-14 bg-white border border-zinc-200 text-zinc-900 font-bold rounded-xl hover:bg-zinc-50 transition-colors flex items-center justify-center gap-2"
+                                >
                                     <ShoppingCart className="w-5 h-5" />
                                     장바구니
                                 </button>

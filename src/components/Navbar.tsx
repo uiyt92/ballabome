@@ -3,11 +3,15 @@
 import React, { useState, useEffect } from 'react'
 import { ShoppingCart, User, Menu, Search } from 'lucide-react'
 import Link from 'next/link'
+import { useCartStore } from '@/store/cartStore'
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false)
+    const [mounted, setMounted] = useState(false)
+    const totalItems = useCartStore((state) => state.getTotalItems())
 
     useEffect(() => {
+        setMounted(true)
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50)
         }
@@ -45,11 +49,18 @@ export default function Navbar() {
 
             <div className="flex items-center gap-5 text-zinc-600">
                 <Search className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
-                <Link href="/login">
+                <Link href="/mypage">
                     <User className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
                 </Link>
-                <Link href="/checkout">
-                    <ShoppingCart className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
+                <Link href="/cart">
+                    <div className="relative">
+                        <ShoppingCart className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
+                        {mounted && totalItems > 0 && (
+                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                {totalItems}
+                            </span>
+                        )}
+                    </div>
                 </Link>
                 <Menu className="w-5 h-5 md:hidden cursor-pointer" />
             </div>

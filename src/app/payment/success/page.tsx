@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { Suspense, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { useCartStore } from '@/store/cartStore'
 
 function PaymentSuccessContent() {
     const searchParams = useSearchParams()
@@ -25,6 +26,15 @@ function PaymentSuccessContent() {
                     updated_at: new Date().toISOString(),
                 })
                 .eq('order_id', orderId)
+
+            const isDirectBuy = searchParams.get('mode') === 'direct'
+
+            // 구매 완료 시 장바구니 비우기
+            if (isDirectBuy) {
+                useCartStore.getState().clearBuyNowItem()
+            } else {
+                useCartStore.getState().clearCart()
+            }
         }
         updateOrder()
     }, [orderId, paymentKey])

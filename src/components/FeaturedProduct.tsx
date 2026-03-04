@@ -2,10 +2,45 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useCartStore } from '@/store/cartStore'
 
 export default function FeaturedProduct() {
+    const router = useRouter()
+    const { addToCart, setBuyNowItem } = useCartStore()
+
+    const product = {
+        id: 'exosome-ampoule-01',
+        name: '발라봄 엑소좀 앰플',
+        price: 34800,
+        quantity: 1,
+        image: '/product-hero.png'
+    }
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault(); // 중요!! Link 태그 무시
+        addToCart(product)
+        if (confirm('장바구니에 상품을 담았습니다. 장바구니로 이동하시겠습니까?')) {
+            router.push('/cart')
+        }
+    }
+
+    const handleBuyNow = (e: React.MouseEvent) => {
+        e.preventDefault(); // 중요!! Link 태그 무시
+
+        // 바로 구매 시 단일 상품을 buyNowItem 상태에 저장
+        setBuyNowItem({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            quantity: 1,
+            image: product.image
+        })
+        router.push('/checkout?mode=direct')
+    }
+
     return (
         <section className="w-full py-20 bg-white">
             <div className="max-w-5xl mx-auto px-6">
@@ -106,24 +141,30 @@ export default function FeaturedProduct() {
                             </div>
                         </div>
 
-                        {/* 간편결제 버튼들 */}
-                        <div className="flex flex-col gap-3 pt-2 max-w-sm md:mx-0 mx-auto">
-                            <Link
-                                href="/product/cheonga-ampoule"
-                                className="w-full h-14 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-colors flex items-center justify-center"
+                        {/* 구매 / 장바구니 버튼들 */}
+                        <div className="flex gap-2 pt-2 max-w-sm md:mx-0 mx-auto">
+                            <button
+                                onClick={handleBuyNow}
+                                className="flex-1 h-14 bg-zinc-900 text-white text-sm font-bold rounded-xl hover:bg-zinc-800 transition-colors flex items-center justify-center"
                             >
-                                구매하기
-                            </Link>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button className="h-12 bg-[#03C75A] text-white flex items-center justify-center gap-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">
-                                    <span className="bg-white text-[#03C75A] w-5 h-5 flex items-center justify-center rounded-sm font-black text-[10px]">N</span>
-                                    PAY
-                                </button>
-                                <button className="h-12 bg-[#FEE500] text-[#3C1E1E] flex items-center justify-center gap-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">
-                                    <MessageCircle className="w-4 h-4 fill-current" />
-                                    PAY
-                                </button>
-                            </div>
+                                바로 구매
+                            </button>
+                            <button
+                                onClick={handleAddToCart}
+                                className="w-14 h-14 bg-white border border-zinc-200 text-zinc-900 rounded-xl hover:bg-zinc-50 transition-colors flex items-center justify-center"
+                            >
+                                <ShoppingCart className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 max-w-sm md:mx-0 mx-auto">
+                            <button className="h-12 bg-[#03C75A] text-white flex items-center justify-center gap-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">
+                                <span className="bg-white text-[#03C75A] w-5 h-5 flex items-center justify-center rounded-sm font-black text-[10px]">N</span>
+                                PAY
+                            </button>
+                            <button className="h-12 bg-[#FEE500] text-[#3C1E1E] flex items-center justify-center gap-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">
+                                <MessageCircle className="w-4 h-4 fill-current" />
+                                PAY
+                            </button>
                         </div>
                     </div>
                 </motion.div>
