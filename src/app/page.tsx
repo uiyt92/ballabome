@@ -1,65 +1,70 @@
-import Image from "next/image";
+'use client'
+
+import { motion } from 'framer-motion'
+import { ShoppingCart, User, Menu, Instagram, Youtube, Search } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import HeroCarousel from '@/components/HeroCarousel'
+import FeaturedProduct from '@/components/FeaturedProduct'
+import BrandStory from '@/components/BrandStory'
+import MediaSection from '@/components/MediaSection'
+import CouponSection from '@/components/CouponSection'
+import TrustSection from '@/components/TrustSection'
+import FloatingCS from '@/components/FloatingCS'
+import FloatingReview from '@/components/FloatingReview'
+import TopBanner from '@/components/TopBanner'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 export default function Home() {
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen bg-white text-zinc-900 selection:bg-zinc-900 selection:text-white">
+      {/* 맨 상단 가입 유도 배너 */}
+      <TopBanner />
+
+      {/* Navigation */}
+      <Navbar />
+
+      <main>        {/* Hero Section - 스와이프 캐러셀 */}
+        <HeroCarousel />
+
+        {/* 쿠폰 섹션 */}
+        <CouponSection />
+
+        {/* 인기상품 */}
+        <FeaturedProduct />
+
+        {/* 신뢰 섹션 */}
+        <TrustSection />
+
+        {/* 브랜드 스토리 */}
+        <BrandStory />
+
+        {/* 리뷰 */}
+        <MediaSection />
       </main>
-    </div>
-  );
+
+      {/* Footer */}
+      {/* Footer */}
+      <Footer />
+
+      {/* 플로팅 후기 (왼쪽) */}
+      <FloatingReview />
+
+      {/* 플로팅 상담 버튼 (오른쪽) */}
+      <FloatingCS />
+    </div >
+  )
 }
+
+
