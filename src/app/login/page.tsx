@@ -4,17 +4,21 @@ import React from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
+import { createClient } from '@/utils/supabase/client'
+
 export default function LoginPage() {
-    const handleKakaoLogin = () => {
-        if (typeof window !== 'undefined' && (window as any).Kakao) {
-            const Kakao = (window as any).Kakao;
-            if (!Kakao.isInitialized()) {
-                alert('카카오 SDK가 초기화되지 않았습니다.');
-                return;
-            }
-            Kakao.Auth.authorize({
-                redirectUri: `${window.location.origin}/auth/kakao/callback`
-            });
+    const handleKakaoLogin = async () => {
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'kakao',
+            options: {
+                redirectTo: `${window.location.origin}/auth/callback`,
+            },
+        });
+
+        if (error) {
+            console.error('Supabase 카카오 로그인 에러:', error.message);
+            alert('로그인 중 오류가 발생했습니다.');
         }
     }
 

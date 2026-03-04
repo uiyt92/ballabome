@@ -3,13 +3,31 @@
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
+import { createClient } from '@/utils/supabase/client'
 
 function PaymentSuccessContent() {
     const searchParams = useSearchParams()
     const amount = searchParams.get('amount')
     const orderId = searchParams.get('orderId')
     const paymentKey = searchParams.get('paymentKey')
+
+    // 결제 성공 시 DB 주문 상태를 PAID로 업데이트
+    useEffect(() => {
+        const updateOrder = async () => {
+            if (!orderId) return
+            const supabase = createClient()
+            await supabase
+                .from('orders')
+                .update({
+                    status: 'PAID',
+                    payment_key: paymentKey,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('order_id', orderId)
+        }
+        updateOrder()
+    }, [orderId, paymentKey])
 
     return (
         <div className="max-w-2xl mx-auto py-32 px-6 text-center">

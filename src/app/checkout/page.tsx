@@ -4,6 +4,7 @@ import { useEffect, useRef, Suspense, useState } from 'react'
 import { loadPaymentWidget, PaymentWidgetInstance } from '@tosspayments/payment-widget-sdk'
 import { useSearchParams } from 'next/navigation'
 import Navbar from '@/components/Navbar'
+import { createClient } from '@/utils/supabase/client'
 
 const clientKey = "test_ck_D5GePWvyJnrKwdP715g8gLzN97Eq" // Toss Payments Test Client Key
 const customerKey = "YbX2HuSlsC9uVJW6NMRMj" // Random string for customer key
@@ -22,11 +23,11 @@ function CheckoutContent() {
     const [zipCode, setZipCode] = useState('')
     const [shippingRequest, setShippingRequest] = useState('배송 요청사항을 선택해주세요')
 
-    // Mock Saved Address State (simulate logged in user)
-    // For new members (Kakao login first time), this would be false
     const [hasSavedAddress, setHasSavedAddress] = useState(false)
     const [isEditingAddress, setIsEditingAddress] = useState(false)
     const [saveAsDefault, setSaveAsDefault] = useState(true)
+    const [userId, setUserId] = useState<string | null>(null)
+    const [userEmail, setUserEmail] = useState('')
 
     // Coupon State
     const [couponCode, setCouponCode] = useState('')
@@ -34,29 +35,40 @@ function CheckoutContent() {
 
     // Get product info from URL or default
     const productName = searchParams.get('productName') || '청아 앰플'
-    // Ensure productPrice is a number, default to 34800 if invalid or missing
     const paramPrice = searchParams.get('price');
     const productPrice = paramPrice && !isNaN(parseInt(paramPrice)) ? parseInt(paramPrice) : 34800;
 
     const finalPrice = productPrice - discountAmount
 
-    // Set default values if saved address exists
+    // Supabase: 로그인 유저 프로필 불러오기
     useEffect(() => {
-        if (hasSavedAddress) {
-            setReceiverName('채영도')
-            setReceiverPhone('010-8293-1217')
-            setAddress('서울 강남구 논현동 175-15')
-            setDetailAddress('502호')
-            setZipCode('06000') // Example ZipCode
-        } else {
-            // New user: fields are empty
-            setReceiverName('')
-            setReceiverPhone('')
-            setAddress('')
-            setDetailAddress('')
-            setZipCode('')
+        const fetchProfile = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (user) {
+                setUserId(user.id)
+                setUserEmail(user.email || '')
+
+                // profiles 테이블에서 저장된 배송지 가져오기
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single()
+
+                if (profile && profile.default_address) {
+                    setHasSavedAddress(true)
+                    setReceiverName(profile.full_name || '')
+                    setReceiverPhone(profile.phone || '')
+                    setAddress(profile.default_address || '')
+                    setDetailAddress(profile.default_address_detail || '')
+                    setZipCode(profile.default_zipcode || '')
+                }
+            }
         }
-    }, [hasSavedAddress])
+        fetchProfile()
+    }, [])
 
     // Load Payment Widget
     useEffect(() => {
@@ -114,12 +126,47 @@ function CheckoutContent() {
             return
         }
 
+        const orderId = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+
         try {
+            const supabase = createClient()
+
+            // 기본 배송지로 저장 체크 시 프로필 업데이트
+            if (saveAsDefault && userId) {
+                await supabase.from('profiles').update({
+                    full_name: receiverName,
+                    phone: receiverPhone,
+                    default_address: address,
+                    default_address_detail: detailAddress,
+                    default_zipcode: zipCode,
+                    updated_at: new Date().toISOString(),
+                }).eq('id', userId)
+            }
+
+            // DB에 주문 내역 저장 (상태: PENDING)
+            if (userId) {
+                await supabase.from('orders').insert({
+                    user_id: userId,
+                    order_id: orderId,
+                    product_name: productName,
+                    quantity: 1,
+                    total_amount: finalPrice,
+                    status: 'PENDING',
+                    receiver_name: receiverName,
+                    receiver_phone: receiverPhone,
+                    address: address,
+                    address_detail: detailAddress,
+                    zipcode: zipCode,
+                    shipping_request: shippingRequest,
+                })
+            }
+
+            // 토스 결제 요청
             await paymentWidget?.requestPayment({
-                orderId: Math.random().toString(36).slice(2),
+                orderId: orderId,
                 orderName: productName,
                 customerName: receiverName,
-                customerEmail: 'customer123@gmail.com',
+                customerEmail: userEmail || 'guest@ballabom.com',
                 customerMobilePhone: receiverPhone.replace(/-/g, ''),
                 successUrl: `${window.location.origin}/payment/success`,
                 failUrl: `${window.location.origin}/payment/fail`,
