@@ -26,12 +26,19 @@ export default function Footer() {
                     <FooterColumn title="Support" links={['고객센터', '공지사항', 'FAQ']} />
                 </div>
 
-                <div className="pt-8 border-t border-zinc-200 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-zinc-400">
-                    <p>© 2026 BALLABOM. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <a href="#" className="hover:text-zinc-900 transition-colors">개인정보처리방침</a>
-                        <a href="#" className="hover:text-zinc-900 transition-colors">이용약관</a>
+                <div className="pt-8 border-t border-zinc-200">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-zinc-400 mb-4">
+                        <div className="flex flex-col gap-1">
+                            <p className="font-bold text-zinc-500 text-sm mb-1">와컵뷰티</p>
+                            <p>대표자: 유현규</p>
+                            <p>주소: 경기도 용인시 기흥구 강남로 9, 504-328호(구갈동, 태평양프라자)</p>
+                        </div>
+                        <div className="flex gap-6">
+                            <a href="#" className="hover:text-zinc-900 transition-colors">개인정보처리방침</a>
+                            <a href="#" className="hover:text-zinc-900 transition-colors">이용약관</a>
+                        </div>
                     </div>
+                    <p className="text-xs text-zinc-400">© 2026 BALLABOM. All rights reserved.</p>
                 </div>
             </div>
         </footer>

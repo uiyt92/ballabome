@@ -5,15 +5,17 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 
 export default function LoginPage() {
-    const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || 'NO_KEY_PROVIDED'}&redirect_uri=http://localhost:3001/oauth/callback/kakao&response_type=code`
-
     const handleKakaoLogin = () => {
-        if (!process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID) {
-            alert('카카오 클라이언트 키가 설정되지 않았습니다. .env 파일을 확인해주세요.')
-            // For demo purposes, we can try redirecting anyway or just log
-            console.log('Redirecting to:', KAKAO_AUTH_URL)
+        if (typeof window !== 'undefined' && (window as any).Kakao) {
+            const Kakao = (window as any).Kakao;
+            if (!Kakao.isInitialized()) {
+                alert('카카오 SDK가 초기화되지 않았습니다.');
+                return;
+            }
+            Kakao.Auth.authorize({
+                redirectUri: `${window.location.origin}/auth/kakao/callback`
+            });
         }
-        window.location.href = KAKAO_AUTH_URL
     }
 
     return (
