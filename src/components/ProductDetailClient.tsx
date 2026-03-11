@@ -75,11 +75,11 @@ export default function ProductDetailClient({ product, options, initialWished }:
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
           {/* 이미지 갤러리 */}
+          <div className="sticky top-24">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="lg:sticky lg:top-24"
           >
             <div className="bg-zinc-50 rounded-2xl p-8 flex items-center justify-center min-h-[500px] mb-4 relative overflow-hidden group">
               <div className="absolute top-4 right-4 z-10">
@@ -109,6 +109,7 @@ export default function ProductDetailClient({ product, options, initialWished }:
               ))}
             </div>
           </motion.div>
+          </div>
 
           {/* 상품 정보 */}
           <motion.div
