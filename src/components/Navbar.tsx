@@ -1,14 +1,20 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { ShoppingCart, User, Menu, Search } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { ShoppingCart, User, Menu, Search, LogOut } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
+import { createClient } from '@/utils/supabase/client'
 
 export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [mounted, setMounted] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [userMenuOpen, setUserMenuOpen] = useState(false)
+    const userMenuRef = useRef<HTMLDivElement>(null)
     const totalItems = useCartStore((state) => state.getTotalItems())
+    const router = useRouter()
 
     useEffect(() => {
         setMounted(true)
@@ -16,8 +22,36 @@ export default function Navbar() {
             setIsScrolled(window.scrollY > 50)
         }
         window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
+
+        const supabase = createClient()
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            setIsLoggedIn(!!user)
+        })
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsLoggedIn(!!session?.user)
+        })
+
+        const handleClickOutside = (e: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+                setUserMenuOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            subscription.unsubscribe()
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
     }, [])
+
+    const handleLogout = async () => {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        setUserMenuOpen(false)
+        router.push('/')
+        router.refresh()
+    }
 
     const BrandLogo = () => (
         <Link href="/" className="text-xl md:text-2xl font-black tracking-tight text-zinc-900 cursor-pointer">
@@ -49,9 +83,29 @@ export default function Navbar() {
 
             <div className="flex items-center gap-5 text-zinc-600">
                 <Search className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
-                <Link href="/mypage">
-                    <User className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
-                </Link>
+                <div className="relative" ref={userMenuRef}>
+                    <button onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                        <User className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />
+                    </button>
+                    {userMenuOpen && (
+                        <div className="absolute right-0 top-8 w-36 bg-white border border-zinc-200 rounded-xl shadow-lg py-1 z-50">
+                            {isLoggedIn ? (
+                                <>
+                                    <Link href="/mypage" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50">
+                                        <User className="w-4 h-4" /> 마이페이지
+                                    </Link>
+                                    <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-zinc-50">
+                                        <LogOut className="w-4 h-4" /> 로그아웃
+                                    </button>
+                                </>
+                            ) : (
+                                <Link href="/login" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-zinc-700 hover:bg-zinc-50">
+                                    <User className="w-4 h-4" /> 로그인
+                                </Link>
+                            )}
+                        </div>
+                    )}
+                </div>
                 <Link href="/cart">
                     <div className="relative">
                         <ShoppingCart className="w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" />

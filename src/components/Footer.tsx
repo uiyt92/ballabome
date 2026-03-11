@@ -31,6 +31,8 @@ export default function Footer() {
                         <div className="flex flex-col gap-1">
                             <p className="font-bold text-zinc-500 text-sm mb-1">와컵뷰티</p>
                             <p>대표자: 유현규</p>
+                            <p>사업자 등록번호: 716-40-01338</p>
+                            <p>사업자 전화: 070-8064-2309</p>
                             <p>주소: 경기도 용인시 기흥구 강남로 9, 504-328호(구갈동, 태평양프라자)</p>
                         </div>
                         <div className="flex gap-6">

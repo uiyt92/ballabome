@@ -50,11 +50,17 @@ export const useCartStore = create<CartState>()(
                 items: state.items.filter((i) => i.id !== id)
             })),
 
-            updateQuantity: (id, quantity) => set((state) => ({
-                items: state.items.map((i) =>
-                    i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i
-                )
-            })),
+            // 수량이 0 이하가 되면 자동으로 항목 제거
+            updateQuantity: (id, quantity) => set((state) => {
+                if (quantity <= 0) {
+                    return { items: state.items.filter((i) => i.id !== id) }
+                }
+                return {
+                    items: state.items.map((i) =>
+                        i.id === id ? { ...i, quantity } : i
+                    )
+                }
+            }),
 
             clearCart: () => set({ items: [] }),
 
@@ -67,7 +73,9 @@ export const useCartStore = create<CartState>()(
             }
         }),
         {
-            name: 'ballabom-cart-storage', // localStorage key
+            name: 'ballabom-cart-storage',
+            // buyNowItem은 세션 한정 → persist에서 제외
+            partialize: (state) => ({ items: state.items }),
             onRehydrateStorage: () => (state) => {
                 if (state) {
                     state.setHasHydrated(true)
