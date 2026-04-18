@@ -1,7 +1,4 @@
-'use client'
-
 import React from 'react'
-import { motion } from 'framer-motion'
 import { CreditCard, Gift } from 'lucide-react'
 
 export default function CouponSection() {
@@ -10,10 +7,7 @@ export default function CouponSection() {
             <div className="max-w-6xl mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {/* Refund Guarantee Coupon */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                    <div
                         className="flex items-center justify-between p-7 md:p-8 bg-sky-400 rounded-2xl text-white group cursor-pointer hover:bg-sky-500 transition-colors"
                     >
                         <div className="text-left">
@@ -21,14 +15,10 @@ export default function CouponSection() {
                             <p className="text-xs md:text-sm opacity-90">제품에 대한 자신감, 먼저 사용해보고 결정하세요.</p>
                         </div>
                         <CreditCard className="w-12 h-12 md:w-14 md:h-14 opacity-50 group-hover:opacity-80 transition-opacity" />
-                    </motion.div>
+                    </div>
 
                     {/* Discount Coupon */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
+                    <div
                         className="flex items-center justify-between p-7 md:p-8 bg-zinc-800 rounded-2xl text-white group cursor-pointer hover:bg-zinc-900 transition-colors"
                     >
                         <div className="text-left">
@@ -36,7 +26,7 @@ export default function CouponSection() {
                             <p className="text-xs md:text-sm opacity-90">회원 가입 즉시 사용 가능한 쿠폰팩을 드려요.</p>
                         </div>
                         <Gift className="w-12 h-12 md:w-14 md:h-14 opacity-50 group-hover:opacity-80 transition-opacity" />
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </section>

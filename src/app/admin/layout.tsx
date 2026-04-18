@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { LayoutDashboard, Image as ImageIcon, ShoppingBag, LogOut } from "lucide-react"
+import { LayoutDashboard, Image as ImageIcon, ShoppingBag, LogOut, Star, Users, Package } from "lucide-react"
 import { createClient } from "@/utils/supabase/server"
 import { redirect } from "next/navigation"
 
@@ -50,6 +50,18 @@ export default async function AdminLayout({
                     <Link href="/admin/orders" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition-colors">
                         <ShoppingBag className="w-5 h-5" />
                         주문 관리
+                    </Link>
+                    <Link href="/admin/products" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition-colors">
+                        <Package className="w-5 h-5" />
+                        상품 관리
+                    </Link>
+                    <Link href="/admin/reviews" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition-colors">
+                        <Star className="w-5 h-5" />
+                        리뷰 관리
+                    </Link>
+                    <Link href="/admin/members" className="flex items-center gap-3 px-3 py-2 text-gray-700 rounded-md hover:bg-gray-100 transition-colors">
+                        <Users className="w-5 h-5" />
+                        회원 관리
                     </Link>
                 </nav>
                 <div className="p-4 border-t">

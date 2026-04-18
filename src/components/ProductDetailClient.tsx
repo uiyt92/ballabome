@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion } from 'framer-motion'
 import { ChevronRight, Truck, ShoppingCart, MessageCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
@@ -70,18 +69,14 @@ export default function ProductDetailClient({ product, options, initialWished }:
   }
 
   return (
-    <section className="pt-8 pb-16 px-6">
+    <section className="pt-4 md:pt-8 pb-8 md:pb-16 px-4 md:px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-6 gap-x-12 items-start">
 
           {/* 이미지 갤러리 */}
-          <div className="sticky top-24">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="bg-zinc-50 rounded-2xl p-8 flex items-center justify-center min-h-[500px] mb-4 relative overflow-hidden group">
+          <div className="lg:sticky lg:top-24">
+          <div className="animate-fade-in">
+            <div className="bg-zinc-50 rounded-2xl flex items-center justify-center min-h-[280px] md:min-h-[400px] lg:min-h-[500px] mb-4 relative overflow-hidden group">
               <div className="absolute top-4 right-4 z-10">
                 <WishlistButton productId={product.id} initialWished={initialWished} />
               </div>
@@ -90,34 +85,31 @@ export default function ProductDetailClient({ product, options, initialWished }:
                 src={images[selectedImage]}
                 alt={product.name}
                 className="max-w-full max-h-[450px] object-contain transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+                decoding="async"
               />
             </div>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
-                  className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${
+                  className={`aspect-square w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
                     selectedImage === idx
                       ? 'border-zinc-900 opacity-100'
                       : 'border-transparent opacity-60 hover:opacity-100'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>
-          </motion.div>
+          </div>
           </div>
 
           {/* 상품 정보 */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-8"
-          >
+          <div className="space-y-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="space-y-4">
               <p className="text-sm font-bold text-sky-600 tracking-wide">수분 전문가의 비밀 공구템</p>
               <div className="space-y-1">
@@ -173,7 +165,7 @@ export default function ProductDetailClient({ product, options, initialWished }:
                   <span>[옵션 선택]</span>
                   <ChevronRight className={`w-5 h-5 transition-transform ${isOptionOpen ? 'rotate-90' : ''}`} />
                 </button>
-                <div className={`divide-y divide-zinc-100 ${isOptionOpen ? 'block' : 'hidden'}`}>
+                <div className={`divide-y divide-zinc-100 overflow-hidden transition-all duration-200 ${isOptionOpen ? 'max-h-96' : 'max-h-0'}`}>
                   {options.map((opt) => (
                     <button
                       key={opt.id}
@@ -211,7 +203,7 @@ export default function ProductDetailClient({ product, options, initialWished }:
                   <button onClick={() => { setSelectedOptionId(null); setQuantity(1) }} className="text-zinc-400 hover:text-zinc-600">✕</button>
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-zinc-200">
-                  <div className="flex items-center gap-3 bg-white border border-zinc-200 rounded px-2 h-8">
+                  <div className="flex items-center gap-3 bg-white border border-zinc-200 rounded px-2 h-11">
                     <button
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       className="text-zinc-400 px-2 hover:text-zinc-700"
@@ -233,9 +225,12 @@ export default function ProductDetailClient({ product, options, initialWished }:
                 <Truck className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="font-black text-zinc-900 mb-1">오늘 출발 14:00 마감</p>
+                <p className="font-black text-zinc-900 mb-1">오늘 출발 15:00 마감</p>
                 <p className="text-sm text-zinc-500 font-medium">
                   지금 주문 시 <span className="text-red-500 font-bold">내일</span>에 발송됩니다
+                </p>
+                <p className="text-sm text-zinc-500 font-medium mt-1">
+                  배송비 3,000원 / <span className="text-blue-600 font-bold">2개 이상 구매 시 무료</span>
                 </p>
               </div>
             </div>
@@ -273,7 +268,7 @@ export default function ProductDetailClient({ product, options, initialWished }:
                 카카오페이 구매
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

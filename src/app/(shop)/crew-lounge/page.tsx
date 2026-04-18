@@ -24,8 +24,8 @@ export default function CrewLoungePage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-5xl mx-auto px-6 pt-12 pb-24">
         <div className="text-center mb-10">
-          <h1 className="text-2xl font-black text-zinc-900">크루 라운지</h1>
-          <p className="text-sm text-zinc-400 mt-2">승무원들의 생생한 이야기와 피부 케어 비법</p>
+          <h1 className="text-2xl font-black text-zinc-900">스킨 솔루션</h1>
+          <p className="text-sm text-zinc-400 mt-2">나에게 맞는 스킨케어 솔루션을 찾아보세요</p>
         </div>
         <div className="flex justify-center gap-2 mb-10 flex-wrap">
           {CATEGORIES.map((cat) => (

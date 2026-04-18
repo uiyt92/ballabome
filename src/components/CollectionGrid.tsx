@@ -1,7 +1,4 @@
-'use client'
-
 import React from 'react'
-import { motion } from 'framer-motion'
 import { ChevronRight, ArrowUpRight, ShieldCheck, Droplets, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 
@@ -51,13 +48,7 @@ export default function CollectionGrid() {
             <div className="max-w-6xl mx-auto px-6">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8 }}
-                        className="max-w-2xl"
-                    >
+                    <div className="max-w-2xl">
                         <span className="text-xs font-medium tracking-widest text-zinc-400 uppercase mb-4 block">
                             Premium Collection
                         </span>
@@ -69,7 +60,7 @@ export default function CollectionGrid() {
                             매일 아침, 비행기에 오르는 설렘을 피부에 전달하세요. <br />
                             발라봄만의 독자적인 에비앙스킨 시스템으로 완성하는 광채.
                         </p>
-                    </motion.div>
+                    </div>
 
                     <button className="group flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-zinc-900 hover:text-sky-500 transition-colors">
                         전제품 보러가기 <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -78,13 +69,9 @@ export default function CollectionGrid() {
 
                 {/* Product Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {PRODUCTS.map((product, idx) => (
-                        <motion.div
+                    {PRODUCTS.map((product) => (
+                        <div
                             key={product.id}
-                            initial={{ opacity: 0, y: 40 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, delay: idx * 0.1 }}
                             className="group cursor-pointer"
                         >
                             <div className="relative aspect-[4/5] mb-6 overflow-hidden bg-zinc-50 rounded-2xl">
@@ -92,6 +79,7 @@ export default function CollectionGrid() {
                                     src={product.image}
                                     alt={product.name}
                                     fill
+                                    sizes="(max-width: 768px) 100vw, 33vw"
                                     className="object-cover transition-transform duration-1000 group-hover:scale-105"
                                 />
                                 <div className="absolute top-4 left-4">
@@ -126,7 +114,7 @@ export default function CollectionGrid() {
                                     <BenefitItem icon={<Sparkles />} label="Glow" />
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>
@@ -142,4 +130,3 @@ function BenefitItem({ icon, label }: { icon: React.ReactNode, label: string }) 
         </div>
     )
 }
-

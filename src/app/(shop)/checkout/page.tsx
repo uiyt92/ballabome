@@ -1,13 +1,11 @@
 'use client'
 
-import { useEffect, useRef, Suspense, useState } from 'react'
-import { loadPaymentWidget, PaymentWidgetInstance } from '@tosspayments/payment-widget-sdk'
+import { useEffect, Suspense, useState } from 'react'
+import { loadTossPayments } from '@tosspayments/tosspayments-sdk'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { useCartStore } from '@/store/cartStore'
 import DaumPostcode from 'react-daum-postcode'
-
-const clientKey = "test_ck_D5GePWvyJnrKwdP715g8gLzN97Eq"
 
 function getCustomerKey(userId: string | null): string {
     if (userId) return userId
@@ -22,9 +20,7 @@ function getCustomerKey(userId: string | null): string {
 }
 
 function CheckoutContent() {
-    const paymentWidgetRef = useRef<PaymentWidgetInstance | null>(null)
-    const paymentMethodsWidgetRef = useRef<ReturnType<PaymentWidgetInstance['renderPaymentMethods']> | null>(null)
-    const [isWidgetReady, setIsWidgetReady] = useState(false)
+    const [tossPayments, setTossPayments] = useState<Awaited<ReturnType<typeof loadTossPayments>> | null>(null)
     const router = useRouter()
     const searchParams = useSearchParams()
     const isDirectBuy = searchParams.get('mode') === 'direct'
@@ -57,7 +53,6 @@ function CheckoutContent() {
     }, [])
 
     useEffect(() => {
-        // Wait for Zustand to finish loading from localStorage before checking for empty cart
         if (mounted && _hasHydrated) {
             if (isDirectBuy) {
                 if (!buyNowItem) {
@@ -77,7 +72,7 @@ function CheckoutContent() {
     const orderName = checkoutItems.length > 1 ? `${checkoutItems[0].name} 외 ${checkoutItems.length - 1}건` : checkoutItems[0]?.name || '상품'
     const totalQuantity = checkoutItems.reduce((acc, item) => acc + item.quantity, 0)
 
-    // Supabase: 로그인 유저 프로필 불러오기 (비회원도 허용)
+    // Supabase: 로그인 유저 프로필 불러오기
     useEffect(() => {
         const fetchProfile = async () => {
             const supabase = createClient()
@@ -102,62 +97,37 @@ function CheckoutContent() {
                     setZipCode(profile.default_zipcode || '')
                 }
             }
-            // 비회원은 그냥 폼 입력으로 진행
         }
         fetchProfile()
     }, [])
 
-    // Load Payment Widget — hydration 완료 후 실행해 실제 금액으로 초기화
+    // TossPayments v2 SDK 초기화
     useEffect(() => {
         if (!_hasHydrated) return
-        if (paymentWidgetRef.current) return // 이미 로드됨
-
         ;(async () => {
             try {
-                const paymentWidget = await loadPaymentWidget(clientKey, getCustomerKey(userId))
-
-                const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
-                    '#payment-widget',
-                    { value: finalPrice || 1000 },
-                    { variantKey: 'DEFAULT' }
-                )
-
-                paymentWidget.renderAgreement(
-                    '#agreement',
-                    { variantKey: 'AGREEMENT' }
-                )
-
-                paymentWidgetRef.current = paymentWidget
-                paymentMethodsWidgetRef.current = paymentMethodsWidget
-
-                setIsWidgetReady(true)
+                const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY!
+                const tp = await loadTossPayments(clientKey)
+                setTossPayments(tp)
             } catch (error) {
-                console.error("Error loading payment widget:", error)
+                console.error('TossPayments 초기화 실패:', error)
             }
         })()
-    }, [_hasHydrated]) // hydration 완료 시 1회 실행
-
-    // Update Amount when Final Price changes
-    useEffect(() => {
-        const widget = paymentMethodsWidgetRef.current
-        if (widget) {
-            widget.updateAmount(finalPrice)
-        }
-    }, [finalPrice])
+    }, [_hasHydrated])
 
     const handleCompletePostcode = (data: any) => {
-        let fullAddress = data.address;
-        let extraAddress = '';
+        let fullAddress = data.address
+        let extraAddress = ''
 
         if (data.addressType === 'R') {
-            if (data.bname !== '') extraAddress += data.bname;
-            if (data.buildingName !== '') extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
-            fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+            if (data.bname !== '') extraAddress += data.bname
+            if (data.buildingName !== '') extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName)
+            fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '')
         }
 
-        setZipCode(data.zonecode);
-        setAddress(fullAddress);
-        setIsPostcodeOpen(false);
+        setZipCode(data.zonecode)
+        setAddress(fullAddress)
+        setIsPostcodeOpen(false)
     }
 
     const handleApplyCoupon = () => {
@@ -171,20 +141,20 @@ function CheckoutContent() {
     }
 
     const handlePayment = async () => {
-        const paymentWidget = paymentWidgetRef.current
+        if (!tossPayments) return
 
-        // Basic Validation
         if (!receiverName || !receiverPhone || !address) {
             alert('배송 정보를 모두 입력해주세요.')
             return
         }
 
         const orderId = `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+        const customerKey = getCustomerKey(userId)
 
         try {
             const supabase = createClient()
 
-            // 기본 배송지로 저장 — 새 주소 입력 or 배송지 변경 시에만 업데이트
+            // 기본 배송지 저장
             const addressWasEdited = !hasSavedAddress || isEditingAddress
             if (saveAsDefault && userId && addressWasEdited) {
                 await supabase.from('profiles').update({
@@ -196,7 +166,7 @@ function CheckoutContent() {
                 }).eq('id', userId)
             }
 
-            // 결제 성공 후 success 페이지에서 insert하기 위해 주문 데이터 임시 저장
+            // 결제 성공 후 success 페이지에서 사용할 주문 데이터 임시 저장
             sessionStorage.setItem(`order_${orderId}`, JSON.stringify({
                 user_id: userId,
                 order_id: orderId,
@@ -212,23 +182,32 @@ function CheckoutContent() {
                 is_direct_buy: isDirectBuy,
             }))
 
-            // 토스 결제 요청
-            await paymentWidget?.requestPayment({
-                orderId: orderId,
-                orderName: orderName,
+            // TossPayments v2 결제창 호출
+            const payment = tossPayments.payment({ customerKey })
+            await payment.requestPayment({
+                method: 'CARD',
+                amount: {
+                    currency: 'KRW',
+                    value: finalPrice,
+                },
+                orderId,
+                orderName,
                 customerName: receiverName,
                 customerEmail: userEmail || 'guest@ballabom.com',
                 customerMobilePhone: receiverPhone.replace(/-/g, ''),
                 successUrl: `${window.location.origin}/payment/success${isDirectBuy ? '?mode=direct' : ''}`,
                 failUrl: `${window.location.origin}/payment/fail`,
+                card: {
+                    useEscrow: false,
+                    useCardPoint: false,
+                    useAppCardOnly: false,
+                },
             })
-        } catch (error) {
+        } catch (error: any) {
+            if (error?.code === 'USER_CANCEL') return
             console.error(error)
+            alert('결제 중 오류가 발생했습니다.')
         }
-    }
-
-    const handleAddressChange = () => {
-        setIsEditingAddress(true)
     }
 
     return (
@@ -329,7 +308,7 @@ function CheckoutContent() {
                                         <input
                                             type="text"
                                             value={zipCode}
-                                            readOnly // For now
+                                            readOnly
                                             className="w-24 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-500"
                                             placeholder="우편번호"
                                         />
@@ -385,7 +364,7 @@ function CheckoutContent() {
                         )}
                     </div>
 
-                    {/* Order Summary with Coupon */}
+                    {/* Coupon & Order Summary */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <span className="w-1 h-6 bg-black block rounded-full" />
@@ -434,29 +413,43 @@ function CheckoutContent() {
                     </div>
                 </div>
 
-                {/* Right Column: Payment Widget */}
+                {/* Right Column: Payment */}
                 <div>
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
                             <span className="w-1 h-6 bg-black block rounded-full" />
-                            결제 수단
+                            결제
                         </h2>
-                        <div id="payment-widget" className="w-full" />
-                        <div id="agreement" className="w-full" />
+
+                        <div className="mb-6 p-4 bg-gray-50 rounded-xl text-sm text-gray-600 space-y-1">
+                            <div className="flex justify-between">
+                                <span>결제 수단</span>
+                                <span className="font-medium text-gray-900">카드 결제</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span>결제 금액</span>
+                                <span className="font-bold text-gray-900">{finalPrice.toLocaleString()}원</span>
+                            </div>
+                        </div>
 
                         <button
-                            disabled={!isWidgetReady}
+                            disabled={!tossPayments}
                             onClick={handlePayment}
-                            className={`w-full font-bold py-4 rounded-xl text-lg transition-colors shadow-lg mt-6 ${isWidgetReady
+                            className={`w-full font-bold py-4 rounded-xl text-lg transition-colors shadow-lg ${tossPayments
                                 ? 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl transform hover:-translate-y-0.5 transition-all'
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                 }`}
                         >
-                            {isWidgetReady ? `${finalPrice.toLocaleString()}원 결제하기` : '결제 정보 불러오는 중...'}
+                            {tossPayments ? `${finalPrice.toLocaleString()}원 결제하기` : '결제 정보 불러오는 중...'}
                         </button>
+
+                        <p className="text-xs text-gray-400 text-center mt-3">
+                            토스페이먼츠 안전 결제
+                        </p>
                     </div>
                 </div>
             </div>
+
             {/* Daum Postcode Modal */}
             {isPostcodeOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -481,5 +474,4 @@ export default function CheckoutPage() {
             </Suspense>
         </div>
     )
-
 }

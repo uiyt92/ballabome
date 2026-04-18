@@ -3,6 +3,9 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const SECRET = (() => {
+    // 1순위: 환경변수 (CI/Vercel)
+    if (process.env.E2E_TEST_SECRET) return process.env.E2E_TEST_SECRET
+    // 2순위: .env.local 직접 읽기 (로컬 개발 시 process.env에 노출되지 않을 때)
     try {
         const env = fs.readFileSync(path.resolve(process.cwd(), '.env.local'), 'utf-8')
         const m = env.match(/E2E_TEST_SECRET=(.+)/)

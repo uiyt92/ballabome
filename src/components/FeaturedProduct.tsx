@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
 import { MessageCircle, ShoppingCart } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -14,9 +13,9 @@ export default function FeaturedProduct() {
     const product = {
         id: 'exosome-ampoule-01',
         name: '발라봄 엑소좀 앰플',
-        price: 34800,
+        price: 24890,
         quantity: 1,
-        image: '/product-hero.png'
+        image: '/images/products/product-standard.webp'
     }
 
     const handleAddToCart = (e: React.MouseEvent) => {
@@ -45,24 +44,13 @@ export default function FeaturedProduct() {
         <section className="w-full py-20 bg-white">
             <div className="max-w-5xl mx-auto px-6">
                 {/* Title */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-center mb-12"
-                >
+                <div className="text-center mb-12 animate-fade-in">
                     <p className="text-xs font-medium tracking-widest text-zinc-400 uppercase mb-3">Bestseller</p>
-                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">인기상품</h2>
-                </motion.div>
+                    <h2 className="text-2xl md:text-4xl font-bold tracking-tight">인기상품</h2>
+                </div>
 
                 {/* Product Layout - 미니멀 */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
-                    className="flex flex-col md:flex-row items-center gap-12"
-                >
+                <div className="flex flex-col md:flex-row items-center gap-12">
                     {/* Product Image - 상세페이지 링크 연결 */}
                     <Link href="/product/cheonga-ampoule" className="flex-1 relative group block cursor-pointer w-full">
                         {/* Rank Badge */}
@@ -111,7 +99,7 @@ export default function FeaturedProduct() {
                         <div className="flex items-center justify-center py-8 bg-gray-50 rounded-2xl min-h-[400px]">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
-                                src="/product-hero.png"
+                                src="/images/products/product-standard.webp"
                                 alt="BALLABOM Exosome Ampoule"
                                 className="max-w-full max-h-[400px] object-contain transition-transform duration-500 group-hover:scale-105"
                                 onError={(e) => {
@@ -125,7 +113,7 @@ export default function FeaturedProduct() {
                     {/* Product Info */}
                     <div className="flex-1 text-center md:text-left space-y-5">
                         <Link href="/product/cheonga-ampoule" className="block hover:opacity-80 transition-opacity">
-                            <h3 className="text-2xl md:text-3xl font-black">발라봄 엑소좀 앰플</h3>
+                            <h3 className="text-2xl md:text-3xl font-bold">발라봄 엑소좀 앰플</h3>
                         </Link>
                         <p className="text-zinc-500 text-base leading-relaxed">
                             피부 깊숙이 스며드는 고농축 엑소좀 앰플.<br />
@@ -134,10 +122,10 @@ export default function FeaturedProduct() {
 
                         {/* Price */}
                         <div className="flex flex-col md:items-start items-center gap-1">
-                            <span className="text-zinc-400 line-through text-sm">46,400원</span>
+                            <span className="text-zinc-400 line-through text-sm">38,300원</span>
                             <div className="flex items-center gap-2">
-                                <span className="text-red-500 text-2xl font-black">25%</span>
-                                <span className="text-3xl font-black">34,800원</span>
+                                <span className="text-red-500 text-2xl font-black">35%</span>
+                                <span className="text-3xl font-black">24,890원</span>
                             </div>
                         </div>
 
@@ -167,7 +155,7 @@ export default function FeaturedProduct() {
                             </button>
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </section>
     )

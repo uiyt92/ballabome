@@ -1,7 +1,4 @@
-'use client'
-
 import React from 'react'
-import { motion } from 'framer-motion'
 import { ShieldCheck, Zap, Heart } from 'lucide-react'
 
 export default function TrustSection() {
@@ -25,12 +22,8 @@ export default function TrustSection() {
                     {features.map((f, i) => {
                         const IconComponent = f.icon
                         return (
-                            <motion.div
+                            <div
                                 key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.1 }}
                                 className="text-center space-y-5"
                             >
                                 <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center mx-auto">
@@ -38,7 +31,7 @@ export default function TrustSection() {
                                 </div>
                                 <h4 className="text-lg font-bold">{f.title}</h4>
                                 <p className="text-zinc-500 text-sm leading-relaxed max-w-[260px] mx-auto">{f.desc}</p>
-                            </motion.div>
+                            </div>
                         )
                     })}
                 </div>

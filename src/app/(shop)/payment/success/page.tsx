@@ -3,7 +3,6 @@
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Suspense, useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { useCartStore } from '@/store/cartStore'
 
 function PaymentSuccessContent() {
@@ -12,33 +11,41 @@ function PaymentSuccessContent() {
     const orderId = searchParams.get('orderId')
     const paymentKey = searchParams.get('paymentKey')
 
-    // 결제 성공 시 DB에 PAID 상태로 주문 insert
+    // 결제 성공 시 토스 서버 승인 후 DB 저장
     useEffect(() => {
         const confirmOrder = async () => {
-            if (!orderId) return
-            const supabase = createClient()
+            if (!orderId || !paymentKey || !amount) return
 
             const stored = sessionStorage.getItem(`order_${orderId}`)
-            if (stored) {
-                const orderData = JSON.parse(stored)
-                const { is_direct_buy, ...dbFields } = orderData
-                await supabase.from('orders').insert({
-                    ...dbFields,
-                    status: 'PAID',
-                    payment_key: paymentKey,
-                })
-                sessionStorage.removeItem(`order_${orderId}`)
+            if (!stored) return
 
-                // 구매 완료 시 장바구니 비우기
+            const orderData = JSON.parse(stored)
+            const { is_direct_buy, ...dbFields } = orderData
+
+            const res = await fetch('/api/payment/confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    paymentKey,
+                    orderId,
+                    amount: Number(amount),
+                    orderData: dbFields,
+                }),
+            })
+
+            if (res.ok) {
+                sessionStorage.removeItem(`order_${orderId}`)
                 if (is_direct_buy) {
                     useCartStore.getState().clearBuyNowItem()
                 } else {
                     useCartStore.getState().clearCart()
                 }
+            } else {
+                console.error('결제 승인 실패')
             }
         }
         confirmOrder()
-    }, [orderId, paymentKey])
+    }, [orderId, paymentKey, amount])
 
     return (
         <div className="max-w-2xl mx-auto py-32 px-6 text-center">

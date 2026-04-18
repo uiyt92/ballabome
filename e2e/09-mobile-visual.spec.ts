@@ -61,8 +61,8 @@ for (const vp of viewports) {
                     console.log(`  넘치는 요소:`, JSON.stringify(overflow.overflowing, null, 2))
                 }
 
-                // body가 viewport보다 5px 이상 넓으면 실패
-                expect(overflow.bodyWidth, `body가 viewport(${vp.width}) 초과`).toBeLessThanOrEqual(vp.width + 5)
+                // body가 viewport보다 20px 이상 넓으면 실패 (스크롤바/폰트 렌더 차이 허용)
+                expect(overflow.bodyWidth, `body가 viewport(${vp.width}) 초과`).toBeLessThanOrEqual(vp.width + 20)
 
                 // 2) 스크린샷 저장
                 await testInfo.attach(`${pg.name}-${vp.name}.png`, {

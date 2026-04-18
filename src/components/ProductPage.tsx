@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/utils/supabase/server'
 import ProductDetailClient from '@/components/ProductDetailClient'
 import ReviewSection from '@/components/ReviewSection'
@@ -48,28 +49,38 @@ export default async function ProductPage({ id }: Props) {
       <div id="section-detail" className="bg-white">
         <div className="max-w-3xl mx-auto">
           {[
-            '/images/BALABOM_01.jpg',
-            '/images/BALABOM_02.jpg',
-            '/images/BALABOM_03.jpg',
-            '/images/BALABOM_04.jpg',
-            '/images/BALABOM_05.jpg',
-            '/images/BALABOM_07.jpg',
-            '/images/BALABOM_08.jpg',
-            '/images/BALABOM_09.jpg',
-            '/images/BALABOM_10.jpg',
-            '/images/BALABOM_12.jpg',
-            '/images/BALABOM_14.jpg',
-            '/images/BALABOM2_01.jpg',
-            '/images/BALABOM2_02.jpg',
-            '/images/BALABOM2_03.jpg',
-            '/images/BALABOM2_04.jpg',
-            '/images/BALABOM2_06.jpg',
-            '/images/BALABOM2_08.jpg',
-            '/images/BALABOM2_09.jpg',
-            '/images/BALABOM2_10.jpg',
-          ].map((src) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={src} src={src} alt="" className="w-full block" />
+            { src: '/images/BALABOM_01.jpg', w: 860, h: 1465 },
+            { src: '/images/BALABOM_02.jpg', w: 860, h: 1465 },
+            { src: '/images/BALABOM_03.jpg', w: 860, h: 1465 },
+            { src: '/images/BALABOM_04.jpg', w: 860, h: 1465 },
+            { src: '/images/BALABOM_05.jpg', w: 860, h: 200 },
+            { src: '/images/BALABOM_07.jpg', w: 860, h: 5685 },
+            { src: '/images/BALABOM_08.jpg', w: 860, h: 2800 },
+            { src: '/images/BALABOM_09.jpg', w: 860, h: 3800 },
+            { src: '/images/BALABOM_10.jpg', w: 860, h: 4289 },
+            { src: '/images/BALABOM_12.jpg', w: 860, h: 800 },
+            { src: '/images/BALABOM_14.jpg', w: 860, h: 200 },
+            { src: '/images/BALABOM2_01.jpg', w: 860, h: 3374 },
+            { src: '/images/BALABOM2_02.jpg', w: 860, h: 1465 },
+            { src: '/images/BALABOM2_03.jpg', w: 860, h: 2200 },
+            { src: '/images/BALABOM2_04.jpg', w: 860, h: 800 },
+            { src: '/images/BALABOM2_06.jpg', w: 860, h: 800 },
+            { src: '/images/BALABOM2_08.jpg', w: 860, h: 800 },
+            { src: '/images/BALABOM2_09.jpg', w: 860, h: 1200 },
+            { src: '/images/BALABOM2_10.jpg', w: 860, h: 1400 },
+          ].map((img, i) => (
+            <Image
+              key={img.src}
+              src={img.src}
+              alt=""
+              width={img.w}
+              height={img.h}
+              className="w-full h-auto block"
+              priority={i === 0}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              quality={75}
+              sizes="(max-width: 768px) 100vw, 768px"
+            />
           ))}
         </div>
       </div>

@@ -1,7 +1,4 @@
-'use client'
-
 import React from 'react'
-import { motion } from 'framer-motion'
 import { MessageCircle, Smile } from 'lucide-react'
 
 export default function SocialLoginCTA() {
@@ -10,10 +7,7 @@ export default function SocialLoginCTA() {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col md:flex-row gap-4">
                     {/* Kakao CTA */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                    <div
                         className="flex-1 bg-[#FEE500] p-6 rounded-2xl flex items-center justify-between group cursor-pointer"
                     >
                         <div className="flex items-center gap-4">
@@ -26,14 +20,10 @@ export default function SocialLoginCTA() {
                             </div>
                         </div>
                         <Smile className="w-5 h-5 text-[#3C1E1E] opacity-20 group-hover:opacity-100 transition-opacity" />
-                    </motion.div>
+                    </div>
 
                     {/* Naver CTA */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
+                    <div
                         className="flex-1 bg-[#03C75A] p-6 rounded-2xl flex items-center justify-between group cursor-pointer"
                     >
                         <div className="flex items-center gap-4 text-white">
@@ -46,7 +36,7 @@ export default function SocialLoginCTA() {
                             </div>
                         </div>
                         <Smile className="w-5 h-5 text-white opacity-20 group-hover:opacity-100 transition-opacity" />
-                    </motion.div>
+                    </div>
                 </div>
             </div>
         </section>
