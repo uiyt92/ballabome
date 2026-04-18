@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { ShoppingCart, User, Menu, X, Search, LogOut } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
 import { createClient } from '@/utils/supabase/client'
@@ -68,14 +67,9 @@ export default function Navbar() {
 
     const BrandLogo = () => (
         <Link href="/" className="cursor-pointer flex items-center min-h-11" aria-label="BALLABOM 홈">
-            <Image
-                src="/images/logo/KakaoTalk_20260316_181904291.webp"
-                alt="BALLABOM"
-                width={160}
-                height={40}
-                className="h-8 md:h-10 w-auto object-contain"
-                priority
-            />
+            <span className="text-xl md:text-2xl font-black tracking-tight text-zinc-900">
+                BALLABOM
+            </span>
         </Link>
     )
 
