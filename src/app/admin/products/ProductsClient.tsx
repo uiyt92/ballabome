@@ -360,7 +360,18 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                           )}
                         </button>
                       </div>
-                      <p className="text-xs text-zinc-400">첫 번째 이미지가 대표 이미지로 표시됩니다. JPG, PNG, WEBP, HEIC 지원 · 최대 10MB</p>
+                      <div className="mt-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600 space-y-1">
+                        <p className="font-semibold text-zinc-700">📐 썸네일 권장 사양</p>
+                        <ul className="list-disc list-inside space-y-0.5 text-zinc-500">
+                          <li><strong>비율</strong>: 1:1 정사각</li>
+                          <li><strong>크기</strong>: 1200×1200px 권장 (최소 800×800px, Retina 대응)</li>
+                          <li><strong>포맷</strong>: WebP 우선, JPG/PNG 가능 · 최대 10MB</li>
+                          <li><strong>용량</strong>: 200KB 이하 권장 (자동 최적화 적용)</li>
+                          <li><strong>배경</strong>: 흰색(#FFFFFF) 또는 단색</li>
+                          <li><strong>여백</strong>: 사방 5~10% (상품이 화면을 꽉 채우지 않게)</li>
+                        </ul>
+                        <p className="text-zinc-400 pt-1">첫 번째 이미지가 대표 썸네일로 표시됩니다.</p>
+                      </div>
                     </div>
                   )}
 

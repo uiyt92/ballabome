@@ -462,6 +462,19 @@ export default function ContentClient({ initialContents }: { initialContents: Si
 
   return (
     <div className="space-y-6">
+      {/* 이미지 권장 사양 안내 */}
+      <div className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-xs text-zinc-700">
+        <p className="font-semibold text-sky-900 mb-1">📐 이미지 권장 사양</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-1 text-zinc-600">
+          <span>• <strong>히어로 배너</strong>: 1920×960px (2:1), 200KB 이하</span>
+          <span>• <strong>상품 썸네일</strong>: 1200×1200px (1:1), 200KB 이하</span>
+          <span>• <strong>브랜드 스토리/배너</strong>: 1600×900px (16:9)</span>
+          <span>• <strong>포맷</strong>: WebP 우선 / JPG, PNG, HEIC 가능</span>
+          <span>• <strong>배경</strong>: 흰색 또는 단색</span>
+          <span>• <strong>최대 용량</strong>: 10MB</span>
+        </div>
+      </div>
+
       {/* Top bar */}
       <div className="flex items-center justify-between bg-white rounded-xl border shadow-sm p-4">
         <div className="flex items-center gap-3">

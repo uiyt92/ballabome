@@ -229,6 +229,63 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 
 ---
 
+## 이미지 가이드라인
+
+쇼핑몰 표준에 맞춘 권장 사양. 어드민 업로드 페이지(`/admin/products`, `/admin/content`)에도 동일한 안내가 노출됨.
+
+### 상품 썸네일 (`product-images` 버킷)
+
+| 항목 | 값 |
+|------|---|
+| 비율 | **1:1 정사각** (필수) |
+| 권장 크기 | 1200×1200px (Retina 대응) |
+| 최소 크기 | 800×800px |
+| 포맷 우선순위 | WebP > JPG > PNG > HEIC |
+| 권장 용량 | 200KB 이하 |
+| 최대 용량 | 10MB (서버 한도) |
+| 배경 | 흰색(#FFFFFF) 또는 단색 (브랜드 톤 유지) |
+| 여백 | 사방 5~10% (제품이 화면을 꽉 채우지 않도록) |
+| 첫 이미지 | **대표 썸네일**로 자동 사용 — 가장 인지도 높은 컷 우선 |
+
+### 히어로 배너 (`public-images/hero-*`)
+
+| 항목 | 값 |
+|------|---|
+| 비율 | 2:1 (가로형) |
+| 크기 | 1920×960px (데스크탑) |
+| 모바일 자동 트림 | `next/image` `sizes` 속성 적용 |
+| 용량 | 200KB 이하 (실측 16~61KB) |
+| 포맷 | WebP 필수 (AVIF 자동 fallback) |
+
+### 브랜드 스토리 / 보조 배너
+
+| 항목 | 값 |
+|------|---|
+| 비율 | 16:9 (1600×900px) |
+| 용량 | 300KB 이하 |
+| 포맷 | WebP / JPG |
+
+### 리뷰 이미지 (`review-images` 버킷)
+
+- 사용자 업로드, 자동 검증
+- 최대 5장 / 5MB per file
+- 허용: JPG, PNG, WEBP, HEIC
+
+### 최적화 워크플로
+
+업로드 전 로컬에서 압축 권장 (이전 세션 sharp 활용 예시 참고):
+```bash
+# WebP 변환 + 리사이즈
+sharp input.jpg --resize 1200,1200 --webp '{"quality":80}' -o output.webp
+
+# JPG mozjpeg 압축
+sharp input.jpg --jpeg '{"quality":75,"mozjpeg":true}' -o output.jpg
+```
+
+next.config.ts에 AVIF/WebP 자동 변환이 설정되어 있어, JPG로 올려도 브라우저 지원 시 AVIF/WebP가 서빙됨.
+
+---
+
 ## 미구현 / 진행 중
 
 ### 알림톡 연동
