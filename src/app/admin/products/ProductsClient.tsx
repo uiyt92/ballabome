@@ -75,10 +75,16 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
   // 이미지 업로드 (service_role 경유 API — RLS 우회 + 테이블 update 동시 처리)
   async function handleImageUpload(productId: string, files: FileList) {
+    const MAX_SIZE = 4 * 1024 * 1024 // Vercel serverless body limit
     setUploadingProduct(productId)
     let latestImages: string[] | null = null
 
     for (const file of Array.from(files)) {
+      if (file.size > MAX_SIZE) {
+        const mb = (file.size / 1024 / 1024).toFixed(1)
+        alert(`${file.name} 너무 큼 (${mb}MB).\n4MB 이하로 압축 후 재업로드. (1200×1200, WebP 권장 → 대부분 200KB 이하)`)
+        continue
+      }
       const ext = file.name.split('.').pop()
       const path = `${productId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
       const formData = new FormData()
@@ -89,7 +95,12 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
 
       try {
         const res = await fetch('/api/upload', { method: 'POST', body: formData })
-        const result = await res.json()
+        let result: { url?: string; images?: string[]; error?: string }
+        try {
+          result = await res.json()
+        } catch {
+          throw new Error(res.status === 413 ? '파일 크기 제한 초과' : `서버 응답 오류 (${res.status})`)
+        }
         if (!res.ok) {
           alert(`업로드 실패: ${file.name} — ${result.error || res.status}`)
           continue
@@ -374,7 +385,7 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
                         <ul className="list-disc list-inside space-y-0.5 text-zinc-500">
                           <li><strong>비율</strong>: 1:1 정사각</li>
                           <li><strong>크기</strong>: 1200×1200px 권장 (최소 800×800px, Retina 대응)</li>
-                          <li><strong>포맷</strong>: WebP 우선, JPG/PNG 가능 · 최대 10MB</li>
+                          <li><strong>포맷</strong>: WebP 우선, JPG/PNG 가능 · <strong className="text-red-600">최대 4MB</strong></li>
                           <li><strong>용량</strong>: 200KB 이하 권장 (자동 최적화 적용)</li>
                           <li><strong>배경</strong>: 흰색(#FFFFFF) 또는 단색</li>
                           <li><strong>여백</strong>: 사방 5~10% (상품이 화면을 꽉 채우지 않게)</li>

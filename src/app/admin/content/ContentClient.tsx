@@ -99,6 +99,7 @@ const DraggableElement = memo(function DraggableElement({
 }) {
   const elRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<{ startX: number; startY: number; origX: number; origY: number; containerRect: DOMRect } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const isCta = elDef.key === 'cta_text'
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -120,12 +121,18 @@ const DraggableElement = memo(function DraggableElement({
 
     const handleMove = (ev: MouseEvent) => {
       if (!dragRef.current || !elRef.current) return
+      // 실제 드래그 임계값 넘은 후에만 willChange 활성화
+      if (!isDragging) {
+        const { startX, startY } = dragRef.current
+        if (Math.abs(ev.clientX - startX) > 3 || Math.abs(ev.clientY - startY) > 3) {
+          setIsDragging(true)
+        }
+      }
       const { startX, startY, origX, origY, containerRect } = dragRef.current
       const dx = ((ev.clientX - startX) / containerRect.width) * 100
       const dy = ((ev.clientY - startY) / containerRect.height) * 100
       const newX = Math.max(0, Math.min(95, origX + dx))
       const newY = Math.max(0, Math.min(95, origY + dy))
-      // Direct DOM manipulation — no React re-render
       elRef.current.style.left = `${newX}%`
       elRef.current.style.top = `${newY}%`
     }
@@ -133,6 +140,7 @@ const DraggableElement = memo(function DraggableElement({
     const handleUp = (ev: MouseEvent) => {
       window.removeEventListener('mousemove', handleMove)
       window.removeEventListener('mouseup', handleUp)
+      setIsDragging(false)
       if (!dragRef.current) return
       const { startX, startY, origX, origY, containerRect } = dragRef.current
       const dx = ((ev.clientX - startX) / containerRect.width) * 100
@@ -158,14 +166,17 @@ const DraggableElement = memo(function DraggableElement({
         maxWidth: elDef.maxWidth || '60%',
         transform: layout.textAlign === 'center' ? 'translateX(-50%)' : 'none',
         zIndex: isSelected ? 50 : 10,
-        willChange: 'left, top',
+        // 드래그 중에만 GPU 레이어 승격 — 평상시 16개 요소 × 4섹션 compositing 비용 제거
+        willChange: isDragging ? 'left, top' : 'auto',
       }}
       onMouseDown={handleMouseDown}
       onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick() }}
     >
-      {/* Selection border */}
-      <div className={`absolute -inset-2 rounded pointer-events-none transition-colors ${
-        isSelected ? 'border-2 border-sky-400 bg-sky-400/10' : 'border border-transparent group-hover:border-white/40'
+      {/* Selection border — selected 상태일 때만 transition 활성 */}
+      <div className={`absolute -inset-2 rounded pointer-events-none ${
+        isSelected
+          ? 'border-2 border-sky-400 bg-sky-400/10 transition-colors'
+          : 'border border-transparent group-hover:border-white/40'
       }`} />
 
       {isSelected && (
@@ -250,7 +261,14 @@ const SectionEditor = memo(function SectionEditor({
   const selectedLayout = selectedKey ? layout[selectedKey] : null
 
   return (
-    <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+    <div
+      className="bg-white rounded-xl border shadow-sm overflow-hidden"
+      style={{
+        // 뷰포트 밖 섹션은 렌더링 skip → 스크롤 성능 대폭 향상
+        contentVisibility: 'auto',
+        containIntrinsicSize: '800px 650px',
+      }}
+    >
       <div className="px-4 py-3 border-b bg-zinc-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-lg">🖼️</span>
@@ -275,7 +293,15 @@ const SectionEditor = memo(function SectionEditor({
         onDrop={handleDrop}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" draggable={false} loading="lazy" />
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          draggable={false}
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
+        />
         <div className={`absolute inset-0 pointer-events-none ${
           section.type === 'hero' ? 'bg-gradient-to-r from-black/60 via-black/30 to-transparent' : 'bg-black/50'
         }`} />
@@ -434,6 +460,18 @@ export default function ContentClient({ initialContents }: { initialContents: Si
   }, [])
 
   const handleImageUpload = useCallback(async (sectionId: string, file: File) => {
+    const MAX_SIZE = 4 * 1024 * 1024 // Vercel serverless body limit ≈ 4.5MB
+    if (file.size > MAX_SIZE) {
+      const mb = (file.size / 1024 / 1024).toFixed(1)
+      alert(
+        `파일이 너무 큽니다 (${mb}MB).\n\n` +
+        `4MB 이하로 압축해서 다시 올려주세요.\n` +
+        `추천: 1920×960px로 리사이즈 + WebP 변환 → 대부분 200KB 이하\n` +
+        `• squoosh.app (무료 온라인)\n` +
+        `• tinypng.com`
+      )
+      return
+    }
     try {
       const ext = file.name.split('.').pop()
       const path = `cms/${sectionId}-${Date.now()}.${ext}`
@@ -444,15 +482,21 @@ export default function ContentClient({ initialContents }: { initialContents: Si
       formData.append('section', sectionId)
       formData.append('key', 'image')
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
-      const result = await res.json()
-      if (!res.ok) throw new Error(result.error)
-      // 로컬 상태 즉시 반영
+      let result: { url?: string; error?: string }
+      try {
+        result = await res.json()
+      } catch {
+        // 413/502 등 non-JSON 응답 (Vercel이 차단한 경우)
+        throw new Error(res.status === 413 ? '파일 크기 제한 초과 (4MB)' : `서버 응답 오류 (${res.status})`)
+      }
+      if (!res.ok) throw new Error(result.error || `오류 ${res.status}`)
+      if (!result.url) throw new Error('URL 반환 없음')
       setContents(prev => {
         const existing = prev.find(c => c.section === sectionId && c.key === 'image')
-        if (existing) return prev.map(c => c.id === existing.id ? { ...c, value_content: result.url } : c)
-        return [...prev, { id: `temp-${Date.now()}`, section: sectionId, key: 'image', value_type: 'image', value_content: result.url }]
+        if (existing) return prev.map(c => c.id === existing.id ? { ...c, value_content: result.url! } : c)
+        return [...prev, { id: `temp-${Date.now()}`, section: sectionId, key: 'image', value_type: 'image', value_content: result.url! }]
       })
-    } catch (err: any) { alert('업로드 실패: ' + (err.message || '')) }
+    } catch (err: any) { alert('업로드 실패: ' + (err.message || '알 수 없는 오류')) }
   }, [])
 
   const handleTextSave = useCallback((sectionId: string, key: string, text: string) => {
@@ -471,7 +515,7 @@ export default function ContentClient({ initialContents }: { initialContents: Si
           <span>• <strong>브랜드 스토리/배너</strong>: 1600×900px (16:9)</span>
           <span>• <strong>포맷</strong>: WebP 우선 / JPG, PNG, HEIC 가능</span>
           <span>• <strong>배경</strong>: 흰색 또는 단색</span>
-          <span>• <strong>최대 용량</strong>: 10MB</span>
+          <span>• <strong>최대 용량</strong>: <strong className="text-red-600">4MB</strong> (Vercel 한도)</span>
         </div>
       </div>
 
