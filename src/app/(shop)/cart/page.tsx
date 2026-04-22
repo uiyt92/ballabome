@@ -14,20 +14,41 @@ export default function CartPage() {
         setMounted(true)
     }, [])
 
-    if (!mounted) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <div className="flex justify-center py-20">Loading cart...</div>
-            </div>
-        )
-    }
+    // Zustand hydration 대기 (SSR/CSR 불일치 방지)
+    // - 아직 복원 안 된 상태에서는 빈 장바구니 UI를 기본값으로 보여줌
+    // - 아이템이 있었으면 아래 items.length > 0 분기에서 즉시 노출되어 깜빡임 최소
+    const isHydrating = !mounted
 
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-4xl mx-auto py-20 px-6">
                 <h1 className="text-3xl font-bold mb-8">장바구니</h1>
 
-                {items.length === 0 ? (
+                {isHydrating ? (
+                    /* 스켈레톤: 레이아웃 shift 없이 짧게 노출 */
+                    <div className="grid md:grid-cols-3 gap-8" aria-busy="true" aria-label="장바구니 불러오는 중">
+                        <div className="md:col-span-2 space-y-4">
+                            {[0, 1].map(i => (
+                                <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex gap-4 items-center animate-pulse">
+                                    <div className="w-24 h-24 bg-gray-200 rounded-xl flex-shrink-0" />
+                                    <div className="flex-1 space-y-3">
+                                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                                        <div className="h-5 bg-gray-200 rounded w-1/3" />
+                                        <div className="h-8 bg-gray-100 rounded w-2/3" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="md:col-span-1">
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 animate-pulse space-y-4">
+                                <div className="h-5 bg-gray-200 rounded w-1/2" />
+                                <div className="h-4 bg-gray-100 rounded" />
+                                <div className="h-4 bg-gray-100 rounded" />
+                                <div className="h-12 bg-gray-200 rounded" />
+                            </div>
+                        </div>
+                    </div>
+                ) : items.length === 0 ? (
                     <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center">
                         <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6">
                             <ShoppingCart className="w-10 h-10 text-gray-400" />

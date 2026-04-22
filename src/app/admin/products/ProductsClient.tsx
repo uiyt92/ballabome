@@ -73,27 +73,36 @@ export default function ProductsClient({ initialProducts }: { initialProducts: P
     setEditingInfo(prev => { const n = { ...prev }; delete n[productId]; return n })
   }
 
-  // 이미지 업로드
+  // 이미지 업로드 (service_role 경유 API — RLS 우회 + 테이블 update 동시 처리)
   async function handleImageUpload(productId: string, files: FileList) {
     setUploadingProduct(productId)
-    const uploaded: string[] = []
+    let latestImages: string[] | null = null
 
     for (const file of Array.from(files)) {
       const ext = file.name.split('.').pop()
       const path = `${productId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: false })
-      if (error) { alert(`업로드 실패: ${file.name}`); continue }
-      const { data } = supabase.storage.from('product-images').getPublicUrl(path)
-      uploaded.push(data.publicUrl)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('bucket', 'product-images')
+      formData.append('path', path)
+      formData.append('productId', productId)
+
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData })
+        const result = await res.json()
+        if (!res.ok) {
+          alert(`업로드 실패: ${file.name} — ${result.error || res.status}`)
+          continue
+        }
+        if (result.images) latestImages = result.images
+      } catch (err: any) {
+        alert(`업로드 실패: ${file.name} — ${err.message || '네트워크 오류'}`)
+      }
     }
 
-    if (uploaded.length === 0) { setUploadingProduct(null); return }
-
-    const product = products.find(p => p.id === productId)
-    const newImages = [...(product?.images ?? []), ...uploaded]
-    const { error } = await supabase.from('products').update({ images: newImages }).eq('id', productId)
-    if (error) { alert('이미지 저장 실패'); setUploadingProduct(null); return }
-    setProducts(prev => prev.map(p => p.id === productId ? { ...p, images: newImages } : p))
+    if (latestImages) {
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, images: latestImages! } : p))
+    }
     setUploadingProduct(null)
   }
 
