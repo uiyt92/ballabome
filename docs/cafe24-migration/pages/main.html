@@ -1,0 +1,276 @@
+<!--
+  ============================================================================
+  카페24 SmartDesign Easy 이식용 HTML — main
+  원본: ballabom.com (Next.js 16 + Tailwind v4)
+  ============================================================================
+
+  이 파일을 카페24에 붙여넣을 때 교체할 부분:
+
+  1. <head>의 CSS link를 카페24 업로드 경로로 변경
+     <link rel="stylesheet" href="/web/upload/styles/ballabom.css">
+
+  2. 동적 데이터 자리에 카페24 변수 삽입
+     - 상품명          → {$product_name}
+     - 가격            → {$price}
+     - 이미지(중형)    → {$image_medium}
+     - 상품 상세 URL   → {$product_link}
+     - 상품 번호       → {$product_no}
+     - 회원 ID         → {$member_id}
+     - 회원명          → {$name}
+
+  3. 반복(상품 목록) 영역은 <module id="xxx"> 블록으로 감쌈
+     <module id="product_listmain_1">
+       <!-- 반복될 카드 HTML -->
+</module>
+
+4. 이미지 경로: /images/... 또는 Supabase URL
+→ 카페24 관리자 > 파일 관리자에서 업로드 후 경로 재매핑
+============================================================================
+-->
+
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charSet="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../assets/styles.css" data-precedence="next" />
+  <title>BALLABOM | 프리미엄 포포먼스 스킨케어</title>
+  <meta name="description" content="Apply Excellence. 남자의 피부를 연구하는 발라봄." />
+  <link rel="icon" href="/favicon.ico?favicon.0b3bf435.ico" sizes="256x256" type="image/x-icon" />
+  <link rel="stylesheet" href="../assets/pretendard.css" />
+</head>
+
+<body class="antialiased">
+  <div hidden=""><!--$--><!--/$--></div>
+  <div class="min-h-screen bg-white text-zinc-900 selection:bg-zinc-900 selection:text-white">
+    <nav class="sticky top-0 w-full z-50 transition-all duration-300 px-5 md:px-12 py-4 flex justify-between items-center bg-white">
+      <div class="flex items-center"><a class="cursor-pointer flex items-center min-h-11" aria-label="BALLABOM 홈" href="/"><span class="text-xl md:text-2xl font-black tracking-tight text-zinc-900">BALLABOM</span></a></div>
+      <div class="hidden md:flex gap-8 text-sm font-medium text-zinc-600"><a class="hover:text-zinc-900 transition-colors" href="/story">브랜드 스토리</a><a class="hover:text-zinc-900 transition-colors" href="/products">전제품</a><a class="hover:text-zinc-900 transition-colors" href="/event">이벤트</a><a class="hover:text-zinc-900 transition-colors" href="/crew-lounge">스킨 솔루션</a><a class="hover:text-zinc-900 transition-colors" href="/notice">공지사항</a></div>
+      <div class="flex items-center gap-1 md:gap-3 text-zinc-600"><a aria-label="검색" class="w-11 h-11 flex items-center justify-center hover:text-zinc-900 transition-colors" href="/products"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search w-5 h-5" aria-hidden="true">
+            <path d="m21 21-4.34-4.34"></path>
+            <circle cx="11" cy="11" r="8"></circle>
+          </svg></a>
+        <div class="relative hidden md:block"><button aria-label="사용자 메뉴" class="w-11 h-11 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" aria-hidden="true">
+              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg></button></div><a aria-label="장바구니" class="w-11 h-11 flex items-center justify-center" href="/cart">
+          <div class="relative"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart w-5 h-5 cursor-pointer hover:text-zinc-900 transition-colors" aria-hidden="true">
+              <circle cx="8" cy="21" r="1"></circle>
+              <circle cx="19" cy="21" r="1"></circle>
+              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+            </svg></div>
+        </a><button class="w-11 h-11 flex items-center justify-center md:hidden"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu w-5 h-5" aria-hidden="true">
+            <path d="M4 5h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 19h16"></path>
+          </svg></button>
+      </div>
+    </nav>
+    <div class="fixed top-0 right-0 h-full w-72 bg-white z-[70] shadow-2xl transform transition-transform duration-300 md:hidden translate-x-full">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-100"><span class="text-sm font-bold text-zinc-900">메뉴</span><button class="w-11 h-11 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x w-5 h-5 text-zinc-600" aria-hidden="true">
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+          </svg></button></div>
+      <div class="flex flex-col py-2"><a class="px-6 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors" href="/story">브랜드 스토리</a><a class="px-6 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors" href="/products">전제품</a><a class="px-6 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors" href="/event">이벤트</a><a class="px-6 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors" href="/crew-lounge">스킨 솔루션</a><a class="px-6 py-3.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors" href="/notice">공지사항</a></div>
+      <div class="border-t border-zinc-100 py-2"><a class="flex items-center gap-3 px-6 py-3.5 text-sm text-zinc-700 hover:bg-zinc-50" href="/login"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user w-4 h-4" aria-hidden="true">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg> 로그인</a></div>
+    </div>
+    <main><!--$?--><template id="B:0"></template>
+      <div class="min-h-[60vh] flex items-center justify-center">
+        <div class="flex flex-col items-center gap-3">
+          <div class="w-8 h-8 border-2 border-zinc-200 border-t-zinc-900 rounded-full animate-spin"></div><span class="text-sm text-zinc-400">로딩 중...</span>
+        </div>
+      </div><!--/$-->
+    </main>
+    <footer class="bg-zinc-50 pt-20 pb-12 px-6 md:px-12">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-12 mb-16">
+          <div class="lg:col-span-2">
+            <div class="text-xl md:text-2xl font-black tracking-tight text-zinc-900">BALLABOM</div>
+            <p class="text-zinc-500 text-sm leading-relaxed max-w-xs mt-4 mb-8">남성을 위한 가장 직관적이고 강력한 퍼포먼스 스킨케어, 발라봄.</p>
+            <div class="flex gap-4"><a href="https://www.instagram.com/ballabom_official" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram w-5 h-5 cursor-pointer text-zinc-400 hover:text-zinc-900 transition-colors" aria-hidden="true">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
+                </svg></a><a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube w-5 h-5 cursor-pointer text-zinc-400 hover:text-zinc-900 transition-colors" aria-hidden="true">
+                  <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"></path>
+                  <path d="m10 15 5-3-5-3z"></path>
+                </svg></a></div>
+          </div>
+          <div class="flex flex-col gap-4"><span class="font-bold text-sm text-zinc-900">Explore</span>
+            <div class="flex flex-col gap-3"><a class="text-sm text-zinc-500 hover:text-zinc-900 transition-colors" href="/products">베스트셀러</a><a class="text-sm text-zinc-500 hover:text-zinc-900 transition-colors" href="/products">전제품</a><a class="text-sm text-zinc-500 hover:text-zinc-900 transition-colors" href="/event">이벤트</a></div>
+          </div>
+          <div class="flex flex-col gap-4"><span class="font-bold text-sm text-zinc-900">Support</span>
+            <div class="flex flex-col gap-3"><a class="text-sm text-zinc-500 hover:text-zinc-900 transition-colors" href="/story">브랜드 스토리</a><a class="text-sm text-zinc-500 hover:text-zinc-900 transition-colors" href="/notice">공지사항</a><a class="text-sm text-zinc-500 hover:text-zinc-900 transition-colors" href="/crew-lounge">스킨 솔루션</a></div>
+          </div>
+        </div>
+        <div class="pt-8 border-t border-zinc-200">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-zinc-400 mb-4">
+            <div class="flex flex-col gap-1">
+              <p class="font-bold text-zinc-500 text-sm mb-1">와컵뷰티</p>
+              <p>대표자: 유현규</p>
+              <p>사업자 등록번호: 716-40-01338</p>
+              <p>사업자 전화: 070-8064-2309</p>
+              <p>주소: 경기도 용인시 기흥구 강남로 9, 504-328호(구갈동, 태평양프라자)</p>
+            </div>
+            <div class="flex gap-6"><a class="hover:text-zinc-900 transition-colors" href="/privacy">개인정보처리방침</a><a class="hover:text-zinc-900 transition-colors" href="/terms">이용약관</a></div>
+          </div>
+          <p class="text-xs text-zinc-400">© 2026 BALLABOM. All rights reserved.</p>
+        </div>
+      </div>
+    </footer><a href="https://pf.kakao.com/_kcxfRX/chat" target="_blank" rel="noopener noreferrer" class="fixed bottom-8 right-8 z-[100] w-14 h-14 bg-zinc-900 text-white flex items-center justify-center rounded-full shadow-lg hover:bg-zinc-800 hover:scale-105 active:scale-95 transition-all duration-200 animate-fade-in" aria-label="카카오톡 상담"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle w-6 h-6" aria-hidden="true">
+        <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"></path>
+      </svg></a><!--$--><!--/$-->
+  </div>
+  <div hidden id="S:0"><template id="P:1"></template><!--$--><!--/$--></div>
+  <div hidden id="S:1">
+    <section class="relative w-full h-[480px] md:h-[600px] overflow-hidden bg-zinc-100">
+      <div class="absolute inset-0 cursor-pointer" draggable="false" style="opacity:1;transform:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:pan-y"><img alt="결국 본질입니다.
+무너지지 않는 기초 포뮬러" draggable="false" decoding="async" data-nimg="fill" class="object-cover" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" sizes="100vw" srcSet="https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 640w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 750w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 828w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 1080w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 1200w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 1920w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 2048w, https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg 3840w" src="https://felhhgifnqsnxlnefnvx.supabase.co/storage/v1/object/public/public-images/cms/hero_1-1776777937179.jpg" />
+        <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+        <div class="absolute inset-0 flex items-center">
+          <div class="px-5 md:px-16 lg:px-24 max-w-2xl">
+            <p class="text-[11px] md:text-xs tracking-[0.2em] text-white/60 font-medium mb-4" style="opacity:1;transform:none">BALLABOM SIGNATURE</p>
+            <h2 class="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 whitespace-pre-line" style="font-family:&#x27;Pretendard Variable&#x27;, Pretendard, sans-serif;opacity:1;transform:none">결국 본질입니다.
+              무너지지 않는 기초 포뮬러</h2>
+            <p class="text-sm md:text-base text-white/70 mb-8" style="opacity:1;transform:none">단 7일 후, 피부 속부터 차오르는 수분감을 경험하세요</p>
+            <div style="opacity:1;transform:none"><span class="inline-block px-7 py-3 border border-white/80 text-white text-sm font-medium rounded-full hover:bg-white hover:text-zinc-900 transition-all">자세히 보기</span></div>
+          </div>
+        </div>
+      </div><button class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left w-5 h-5" aria-hidden="true">
+          <path d="m15 18-6-6 6-6"></path>
+        </svg></button><button class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right w-5 h-5" aria-hidden="true">
+          <path d="m9 18 6-6-6-6"></path>
+        </svg></button>
+      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10"><button class="group relative">
+          <div class="h-[3px] rounded-full transition-all duration-500 w-8 bg-white"></div>
+        </button><button class="group relative">
+          <div class="h-[3px] rounded-full transition-all duration-500 w-3 bg-white/40 hover:bg-white/60"></div>
+        </button><button class="group relative">
+          <div class="h-[3px] rounded-full transition-all duration-500 w-3 bg-white/40 hover:bg-white/60"></div>
+        </button></div>
+    </section>
+    <section class="w-full border-y border-zinc-200 bg-white">
+      <div class="max-w-6xl mx-auto grid grid-cols-2 divide-x divide-zinc-200">
+        <div class="flex items-center justify-center gap-3 py-5 md:py-6 px-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tag w-7 h-7 md:w-8 md:h-8 text-sky-500 flex-shrink-0" aria-hidden="true">
+            <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path>
+            <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>
+          </svg>
+          <div class="text-left">
+            <p class="text-[11px] md:text-xs text-zinc-400 font-medium leading-tight">카카오톡 채널 추가</p>
+            <p class="text-xs md:text-sm font-bold text-zinc-800 leading-tight">3,000원 할인쿠폰 지급</p>
+          </div>
+        </div>
+        <div class="flex items-center justify-center gap-3 py-5 md:py-6 px-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check w-7 h-7 md:w-8 md:h-8 text-sky-500 flex-shrink-0" aria-hidden="true">
+            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+          <div class="text-left">
+            <p class="text-[11px] md:text-xs text-zinc-400 font-medium leading-tight">100%</p>
+            <p class="text-xs md:text-sm font-bold text-zinc-800 leading-tight">환불 보장 제도</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="w-full py-12 md:py-16 bg-white">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <p class="text-[11px] tracking-[0.15em] text-zinc-400 uppercase font-medium mb-1">BEST SELLER</p>
+            <h2 class="text-xl md:text-2xl font-bold text-zinc-900">베스트 상품</h2>
+          </div><a class="text-xs md:text-sm text-zinc-400 hover:text-zinc-700 transition-colors" href="/products">전체보기 &gt;</a>
+        </div>
+        <div class="grid grid-cols-1 max-w-xs mx-auto md:max-w-none md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5"><a class="group block" href="/product/cheonga-ampoule">
+            <div class="relative w-full aspect-square bg-zinc-50 rounded-lg overflow-hidden mb-3"><img alt="발라봄 청아 앰플" loading="lazy" decoding="async" data-nimg="fill" class="object-cover group-hover:scale-105 transition-transform duration-500" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" srcSet="/images/products/product-standard.webp 256w, /images/products/product-standard.webp 384w, /images/products/product-standard.webp 640w, /images/products/product-standard.webp 750w, /images/products/product-standard.webp 828w, /images/products/product-standard.webp 1080w, /images/products/product-standard.webp 1200w, /images/products/product-standard.webp 1920w, /images/products/product-standard.webp 2048w, /images/products/product-standard.webp 3840w" src="/images/products/product-standard.webp" />
+              <div class="absolute top-2 left-2 flex gap-1"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-sky-500 text-white">BEST</span><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-zinc-800 text-white">무료배송</span></div>
+            </div>
+            <div class="space-y-1.5">
+              <h3 class="text-sm md:text-base font-semibold text-zinc-800 leading-snug group-hover:text-sky-600 transition-colors">발라봄 청아 앰플</h3>
+              <p class="text-xs text-zinc-400 leading-snug">엑소좀 피부장벽 고농축 진정 앰플</p>
+              <div><span class="text-zinc-300 line-through text-xs">38,300<!-- -->원</span>
+                <div class="flex items-center gap-1.5"><span class="text-red-500 font-bold text-sm">35<!-- -->%</span><span class="text-zinc-900 font-bold text-base md:text-lg">24,890<!-- -->원</span></div>
+              </div>
+              <div class="flex items-center gap-1 text-xs text-zinc-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3 h-3 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><span>4.8</span><span class="text-zinc-300">(<!-- -->128<!-- -->)</span></div>
+            </div>
+          </a></div>
+      </div>
+    </section>
+    <section class="w-full py-12 md:py-16 bg-zinc-50">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <p class="text-[11px] tracking-[0.15em] text-zinc-400 uppercase font-medium mb-1">Reviews</p>
+            <h2 class="text-xl md:text-2xl font-bold text-zinc-900">BEST REVIEW</h2>
+          </div>
+          <div class="flex gap-2"><button class="w-10 h-10 border border-zinc-300 rounded-full flex items-center justify-center hover:bg-white transition-colors" aria-label="이전"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left w-4 h-4 text-zinc-500" aria-hidden="true">
+                <path d="m15 18-6-6 6-6"></path>
+              </svg></button><button class="w-10 h-10 border border-zinc-300 rounded-full flex items-center justify-center hover:bg-white transition-colors" aria-label="다음"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right w-4 h-4 text-zinc-500" aria-hidden="true">
+                <path d="m9 18 6-6-6-6"></path>
+              </svg></button></div>
+        </div>
+        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2" style="scroll-snap-type:x mandatory">
+          <div class="flex-shrink-0 w-[calc(100vw-64px)] sm:w-60 md:w-72 bg-white rounded-xl overflow-hidden border border-zinc-100" style="scroll-snap-align:start">
+            <div class="w-full aspect-[4/3] bg-zinc-100 overflow-hidden">
+              <div class="w-full h-full flex items-center justify-center bg-zinc-50"><span class="text-zinc-300 text-sm">이미지 없음</span></div>
+            </div>
+            <div class="p-4 space-y-2.5">
+              <div class="flex gap-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg></div>
+              <p class="text-zinc-600 text-sm leading-relaxed line-clamp-2">조하연</p>
+              <div class="flex items-center gap-2 pt-1 border-t border-zinc-50">
+                <div class="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center"><span class="text-zinc-400 text-[9px] font-medium">유</span></div><span class="text-zinc-400 text-xs">유현규</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-[calc(100vw-64px)] sm:w-60 md:w-72 bg-white rounded-xl overflow-hidden border border-zinc-100" style="scroll-snap-align:start">
+            <div class="w-full aspect-[4/3] bg-zinc-100 overflow-hidden">
+              <div class="w-full h-full flex items-center justify-center bg-zinc-50"><span class="text-zinc-300 text-sm">이미지 없음</span></div>
+            </div>
+            <div class="p-4 space-y-2.5">
+              <div class="flex gap-0.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true">
+                  <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path>
+                </svg></div>
+              <p class="text-zinc-600 text-sm leading-relaxed line-clamp-2">너무 좋습니다.</p>
+              <div class="flex items-center gap-2 pt-1 border-t border-zinc-50">
+                <div class="w-5 h-5 rounded-full bg-zinc-100 flex items-center justify-center"><span class="text-zinc-400 text-[9px] font-medium">유</span></div><span class="text-zinc-400 text-xs">유현규</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="w-full relative overflow-hidden min-h-[400px]"><img alt="발라봄 브랜드" loading="lazy" decoding="async" data-nimg="fill" class="object-cover object-center" style="position:absolute;height:100%;width:100%;left:0;top:0;right:0;bottom:0;color:transparent" sizes="100vw" srcSet="/images/products/product-standard.webp 640w, /images/products/product-standard.webp 750w, /images/products/product-standard.webp 828w, /images/products/product-standard.webp 1080w, /images/products/product-standard.webp 1200w, /images/products/product-standard.webp 1920w, /images/products/product-standard.webp 2048w, /images/products/product-standard.webp 3840w" src="/images/products/product-standard.webp" />
+      <div class="absolute inset-0 bg-black/50"></div>
+      <div class="relative z-10 flex flex-col items-center justify-center h-full min-h-[400px] px-5 text-center text-white"><img alt="BALLABOM" loading="lazy" width="160" height="40" decoding="async" data-nimg="1" class="h-8 md:h-10 w-auto object-contain mb-6 brightness-0 invert" style="color:transparent" srcSet="/images/logo/KakaoTalk_20260316_181904291.webp 1x, /images/logo/KakaoTalk_20260316_181904291.webp 2x" src="/images/logo/KakaoTalk_20260316_181904291.webp" />
+        <h2 class="text-xl md:text-3xl font-bold leading-snug mb-3 whitespace-pre-line">남성 피부를 위한 프리미엄
+          퍼포먼스 스킨케어</h2>
+        <p class="text-sm md:text-base text-white/70 max-w-md leading-relaxed mb-8 whitespace-pre-line">과학적으로 입증된 성분을 기반으로
+          피부를 건강하고 탄력있게 바꿔드립니다.</p><a class="inline-block px-8 py-3 border border-white/70 text-white text-sm font-medium rounded-full hover:bg-white hover:text-zinc-900 transition-all" href="/story">브랜드 스토리</a>
+      </div>
+    </section>
+  </div>
+</body>
+
+</html>
